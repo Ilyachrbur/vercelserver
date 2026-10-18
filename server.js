@@ -1,21 +1,11 @@
-#!/usr/bin/env node
-import { configFromEnv, createPeerServer } from './src/create-server.js';
+import { createPeerServer } from '../src/create-server.js';
 
-const config = configFromEnv();
-const peer = await createPeerServer(config);
-const port = Number(process.env.PORT || 9000);
-const host = process.env.HOST || '0.0.0.0';
+const peer = await createPeerServer();
 
-peer.httpServer.listen(port, host, () => {
-  const boundPort = peer.httpServer.address().port;
-  console.log(`peerjs-server-vercel listening on http://${host}:${boundPort}`);
-  console.log(`signaling url: ws://${host}:${boundPort}/peerjs?key=${config.key}`);
-});
+// Hobby rejects a value above 300. vercel.json must rewrite to /api/server
+// with no path suffix; /api/server/$1 never reaches this file.
+export const config = {
+  maxDuration: 300
+};
 
-async function shutdown() {
-  await peer.close();
-  process.exit(0);
-}
-
-process.on('SIGTERM', shutdown);
-process.on('SIGINT', shutdown);
+export default peer.httpServer;
